@@ -1,4 +1,4 @@
-create database if not exists hostelmessanalysis;
+create database  hostelmessanalysis;
 use hostelmessanalysis;
 create table hostels(
 	hostel_id int primary key auto_increment,
