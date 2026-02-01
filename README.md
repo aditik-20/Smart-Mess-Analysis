@@ -42,3 +42,57 @@ Analytical Queries (Views, SPs)
 Backend APIs (Node.js + Express)
 ↓
 Frontend Dashboard (Charts & Tables)
+
+
+
+erDiagram
+
+    HOSTELS ||--o{ STUDENTS : houses
+    HOSTELS ||--o{ COSTS : incurs
+    HOSTELS ||--o{ WASTAGE : tracks
+
+    STUDENTS ||--o{ ATTENDANCE : records
+    STUDENTS ||--o{ MEALS_LOG : consumes
+
+    COSTS }o--o{ WASTAGE : contributes
+
+    HOSTELS {
+        int hostel_id PK
+        string hostel_name
+    }
+
+    STUDENTS {
+        int student_id PK
+        string student_name
+        int hostel_id FK
+    }
+
+    %% WEAK ENTITY
+    ATTENDANCE {
+        int student_id FK
+        date date PK
+        boolean status
+    }
+
+    %% WEAK ENTITY
+    MEALS_LOG {
+        int student_id FK
+        date date PK
+        string meal_type PK
+        int hour
+    }
+
+    COSTS {
+        int cost_id PK
+        int hostel_id FK
+        date date
+        decimal total_cost
+    }
+
+    WASTAGE {
+        int waste_id PK
+        int hostel_id FK
+        string meal_type
+        date date
+        decimal waste_kg
+    }
