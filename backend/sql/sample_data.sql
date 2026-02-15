@@ -54,3 +54,36 @@ INSERT INTO Student_Meal (student_id, meal_id) VALUES
 (3,3),
 (4,4),
 (5,5);
+
+INSERT INTO Attendance (student_id, date, status) VALUES
+(1,'2026-02-15','Present'),
+(2,'2026-02-15','Present'),
+(3,'2026-02-15','Absent'),
+(4,'2026-02-15','Present'),
+(5,'2026-02-15','Present');
+
+INSERT INTO Meal_Log (meal_id, quantity_consumed, record_date) VALUES
+(1,250,'2026-02-15'),
+(2,200,'2026-02-15'),
+(3,180,'2026-02-15'),
+(4,150,'2026-02-15'),
+(5,300,'2026-02-15');
+
+INSERT INTO Wastage (meal_id, waste_kg, reason, date) VALUES
+(1,12.5,'Over-preparation','2026-02-15'),
+(2,10.0,'Low attendance','2026-02-15'),
+(3,8.5,'Menu dislike','2026-02-15'),
+(4,6.0,'Excess serving','2026-02-15'),
+(5,15.0,'Bulk cooking','2026-02-15');
+
+INSERT INTO Cost (date, total_cost) VALUES
+('2026-02-15', 50000.00);
+
+INSERT INTO Food_Cost (cost_id, food_amount) VALUES
+(1, 35000.00);
+
+INSERT INTO Utility_Cost (cost_id, electricity_cost, water_cost) VALUES
+(1, 10000.00, 5000.00);
+
+INSERT INTO Meal_Cost (meal_id, cost_id) VALUES
+(1,1),(2,1),(3,1),(4,1),(5,1);
