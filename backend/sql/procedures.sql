@@ -138,3 +138,91 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+-- FUNCTIONS
+DELIMITER $$
+CREATE FUNCTION get_total_wastage(m_id INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE total DECIMAL(10,2);
+
+    SELECT SUM(waste_kg)
+    INTO total
+    FROM Wastage
+    WHERE meal_id = m_id;
+
+    RETURN IFNULL(total,0);
+END;
+DELIMITER ;
+
+-- TRIGGERS
+DELIMITER $$
+
+CREATE TRIGGER check_student_age
+BEFORE INSERT ON Student
+FOR EACH ROW
+BEGIN
+IF NEW.age < 16 THEN
+SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'Age must be >= 16';
+END IF;
+END $$
+
+DELIMITER ;
+
+-- CURSOR PROCEDURE
+DELIMITER $$
+
+CREATE PROCEDURE total_consumption()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE qty INT;
+DECLARE total INT DEFAULT 0;
+
+DECLARE cur CURSOR FOR
+SELECT quantity_consumed FROM Meal_Log;
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+OPEN cur;
+
+read_loop: LOOP
+FETCH cur INTO qty;
+
+IF done THEN
+LEAVE read_loop;
+END IF;
+
+SET total = total + qty;
+
+END LOOP;
+
+CLOSE cur;
+
+SELECT total AS total_meal_consumption;
+END $$
+
+DELIMITER ;
+
+-- EXCEPTION HANDLING
+DELIMITER $$
+
+CREATE PROCEDURE safe_insert_cost(
+IN p_date DATE,
+IN p_cost DECIMAL(10,2)
+)
+BEGIN
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+SELECT 'Error inserting cost';
+END;
+
+INSERT INTO Cost(date,total_cost)
+VALUES(p_date,p_cost);
+
+END $$
+
+DELIMITER ;
