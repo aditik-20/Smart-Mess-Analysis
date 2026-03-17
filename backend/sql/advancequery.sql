@@ -1,7 +1,6 @@
 
 SELECT first_name,last_name
-FROM Student
-WHERE hostel_id =
+FROM Student WHERE hostel_id =
 (
 SELECT hostel_id
 FROM Hostel
@@ -79,3 +78,11 @@ JOIN Mess me ON m.mess_id = me.mess_id
 LEFT JOIN Student_Meal sm ON m.meal_id = sm.meal_id
 LEFT JOIN Wastage w ON m.meal_id = w.meal_id
 GROUP BY m.date, me.mess_name;
+
+SELECT s.first_name, s.last_name
+FROM Student s
+WHERE (
+    SELECT COUNT(*)
+    FROM Student_Meal sm
+    WHERE sm.student_id = s.student_id
+) > 2;
