@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Mess Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <div class="header">
+                <div>
+                    <h1>Admin Control Panel</h1>
+                    <p style="color: var(--text-secondary);">Manage Attendance, Wastage, and Users</p>
+                </div>
+                <button id="logoutBtn" class="btn-secondary">Logout</button>
+            </div>
+
+            <!-- Seed Students Section -->
+            <div class="seed-section" style="margin-top: 30px;">
+                <h3>Auto-Generate Student Data</h3>
+                <p>If the database has no students, you can generate 50 students automatically. IDs will range from RA241100301000 to RA241100301049.</p>
+                <button id="seedStudentsBtn" class="btn-primary" style="max-width: 200px;">Seed 50 Students</button>
+                <div id="seedMessage" class="success-message"></div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 30px;">
+                <!-- Manual Attendance Form -->
+                <div>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Add Manual Attendance</h3>
+                    <form id="attendanceForm">
+                        <div class="input-group">
+                            <label>Student ID (e.g., RA241100301000)</label>
+                            <input type="text" id="att_registration_number" required placeholder="RA241100301000">
+                        </div>
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="att_date" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Status</label>
+                            <select id="att_status" required>
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary">Mark Attendance</button>
+                        <div id="attMessage" class="success-message"></div>
+                    </form>
+                </div>
+
+                <!-- Manual Wastage Form -->
+                <div>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Add Meal Wastage</h3>
+                    <form id="wastageForm">
+                        <div class="input-group">
+                            <label>Meal ID</label>
+                            <input type="number" id="waste_meal_id" required placeholder="e.g., 1">
+                        </div>
+                        <div class="input-group">
+                            <label>Waste (kg)</label>
+                            <input type="number" step="0.1" id="waste_kg" required placeholder="0.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Reason</label>
+                            <input type="text" id="waste_reason" required placeholder="e.g., Over-preparation">
+                        </div>
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input type="date" id="waste_date" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Record Wastage</button>
+                        <div id="wasteMessage" class="success-message"></div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="back-link" style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <a href="dashboard.html">← Go to Analytics Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
