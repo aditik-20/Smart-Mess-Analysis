@@ -35,6 +35,7 @@ CREATE TABLE Menu_Ingredient (
 );
 CREATE TABLE Student (
     student_id INT PRIMARY KEY AUTO_INCREMENT,
+    registration_number VARCHAR(20) UNIQUE,
     first_name VARCHAR(30) NOT NULL,
     middle_name VARCHAR(30),
     last_name VARCHAR(30) NOT NULL,

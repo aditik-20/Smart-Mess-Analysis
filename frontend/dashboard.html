@@ -1,5 +1,4 @@
-<<<<<<< Updated upstream
-=======
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -20,10 +19,29 @@
     <!-- Loading Spinner -->
     <div id="loader">
       <div class="spinner"></div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Mess Analytics | Dashboard</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/index.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loader">
+        <div class="spinner"></div>
     </div>
 
     <!-- Sidebar -->
     <aside class="sidebar glass">
+
       <div class="logo">
         <i class="fa-solid fa-utensils"></i>
         <span>MessAnalytics</span>
@@ -55,11 +73,24 @@
           >
         </li>
       </ul>
+
+        <div class="logo">
+            <i class="fa-solid fa-utensils"></i>
+            <span>MessAnalytics</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active" id="nav-dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="#" class="nav-link" id="nav-attendance"><i class="fa-solid fa-users"></i> Attendance</a></li>
+            <li><a href="#" class="nav-link" id="nav-wastage"><i class="fa-solid fa-trash-can"></i> Wastage Logs</a></li>
+            <li><a href="#" class="nav-link" id="nav-expenses"><i class="fa-solid fa-indian-rupee-sign"></i> Expenses</a></li>
+            <li><a href="#" class="nav-link" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings (Logout)</a></li>
+        </ul>
+
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Header -->
+
       <header class="header">
         <div class="header-title">
           <h1>Overview</h1>
@@ -176,10 +207,114 @@
           </div>
         </div>
       </div>
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title">
+                <h1>Overview</h1>
+                <p>Real-time insights for hostel mess operations</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i> Refresh Data</button>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters glass">
+            <select class="filter-select" id="hostelFilter">
+                <option value="all">All Hostels</option>
+                <option value="1">Boys Hostel A</option>
+                <option value="2">Girls Hostel B</option>
+            </select>
+            <select class="filter-select" id="timeFilter">
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            <select class="filter-select" id="mealFilter">
+                <option value="all">All Meals</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+            </select>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Stats Row -->
+            <div class="stats-container">
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-blue"><i class="fa-solid fa-user-group"></i></div>
+                    <div class="stat-info">
+                        <p>Total Students</p>
+                        <h3 id="statStudents">...</h3>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-green"><i class="fa-solid fa-check-to-slot"></i></div>
+                    <div class="stat-info">
+                        <p>Today's Attendance</p>
+                        <h3 id="statAttendance">...</h3>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-red"><i class="fa-solid fa-trash"></i></div>
+                    <div class="stat-info">
+                        <p>Food Wastage Today</p>
+                        <h3 id="statWastage">...</h3>
+                    </div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-icon icon-purple"><i class="fa-solid fa-building"></i></div>
+                    <div class="stat-info">
+                        <p>Active Hostels</p>
+                        <h3 id="statHostels">...</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="chart-container glass chart-wide">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-chart-line"></i> Wastage Trends (Past 7 Days)</h3>
+                </div>
+                <canvas id="wastageChart"></canvas>
+            </div>
+            
+            <div class="chart-container glass chart-narrow">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-chart-bar"></i> Cost Analysis</h3>
+                </div>
+                <canvas id="costChart"></canvas>
+            </div>
+
+            <!-- Alerts & AI Row -->
+            <div class="alerts-container">
+                <div class="glass" style="padding: 24px;">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-bell"></i> Smart Alerts</h3>
+                    </div>
+                    <div class="alert-list" id="alertsList">
+                        <!-- Populated by JS -->
+                        <div class="alert-item"><i class="fa-solid fa-spinner fa-spin"></i> Loading alerts...</div>
+                    </div>
+                </div>
+
+                <div class="ai-card glass">
+                    <div class="ai-header">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Insights
+                    </div>
+                    <div class="ai-content" id="aiPrediction">
+                        Analyzing consumption patterns...
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modals -->
     <div id="attendanceModal" class="modal">
+
       <div class="modal-content glass">
         <span class="close-btn" id="closeAttendance">&times;</span>
         <h2>Add Manual Attendance</h2>
@@ -250,6 +385,61 @@
           <div id="modal_waste_msg" class="modal-msg"></div>
         </form>
       </div>
+        <div class="modal-content glass">
+            <span class="close-btn" id="closeAttendance">&times;</span>
+            <h2>Add Manual Attendance</h2>
+            <form id="attendanceFormModal">
+                <div class="form-group">
+                    <label>Registration Number</label>
+                    <input type="text" id="modal_att_reg" required placeholder="e.g. RA241100301000">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="modal_att_date" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="modal_att_status">
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <div id="modal_att_msg" class="modal-msg"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="wastageModal" class="modal">
+        <div class="modal-content glass">
+            <span class="close-btn" id="closeWastage">&times;</span>
+            <h2>Log Meal Wastage</h2>
+            <form id="wastageFormModal">
+                <div class="form-group">
+                    <label>Meal Type</label>
+                    <select id="modal_waste_meal_type" required>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Waste (kg)</label>
+                    <input type="number" step="0.1" id="modal_waste_kg" required placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <input type="text" id="modal_waste_reason" required placeholder="e.g. Over-preparation">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="modal_waste_date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <div id="modal_waste_msg" class="modal-msg"></div>
+            </form>
+        </div>
+
     </div>
 
     <!-- Scripts -->
@@ -257,6 +447,9 @@
     <script src="js/charts/dashboardCharts.js"></script>
     <script src="js/ai/prediction.js"></script>
     <script src="js/pages/dashboard.js"></script>
+
   </body>
 </html>
->>>>>>> Stashed changes
+
+</body>
+</html>
