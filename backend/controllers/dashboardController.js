@@ -1,140 +1,231 @@
 const db = require("../config/db");
 
+function normalizeMeal(meal) {
+  if (!meal || meal === "all") return null;
+  return meal.charAt(0).toUpperCase() + meal.slice(1).toLowerCase();
+}
+
+function getDateCondition(timeFilter, columnName) {
+  if (timeFilter === "week") {
+    return `YEARWEEK(${columnName}, 1) = YEARWEEK(CURDATE(), 1)`;
+  }
+
+  if (timeFilter === "month") {
+    return `MONTH(${columnName}) = MONTH(CURDATE()) AND YEAR(${columnName}) = YEAR(CURDATE())`;
+  }
+
+  return `DATE(${columnName}) = CURDATE()`;
+}
+
 exports.getStats = async (req, res) => {
-  const meal = req.query.meal || "all";
+  const meal = normalizeMeal(req.query.meal);
+  const time = req.query.time || "today";
+  const hostel = req.query.hostel || "all";
+
   try {
-    const [studentCountResult] = await db.query(
-      "SELECT COUNT(*) as count FROM Student",
-    );
-    const studentCount = studentCountResult[0]?.count || 0;
+    let studentQuery = `
+      SELECT COUNT(*) AS count
+      FROM Student s
+      WHERE 1 = 1
+    `;
 
-    const [wastageResult] = await db.query(
-      "SELECT SUM(waste_kg) as total_waste FROM Wastage WHERE date = CURDATE()",
-    );
-    let todayWastage = wastageResult[0]?.total_waste || 0;
+    let studentParams = [];
 
-    const [attendanceResult] = await db.query(
-      "SELECT COUNT(*) as present FROM Attendance WHERE date = CURDATE() AND status = 'Present'",
-    );
-    let todayAttendance = attendanceResult[0]?.present || 0;
-
-    res.json({
-      studentCount: studentCount > 0 ? studentCount : 450,
-      todayWastage: todayWastage > 0 ? todayWastage : 24.5,
-      todayAttendance: todayAttendance > 0 ? todayAttendance : 380,
-      activeHostels: 4,
-    });
-  } catch (error) {
-    // Fallback to mock data if DB isn't seeded
-    let w = 24.5;
-    let a = 380;
-    if (meal === "breakfast") {
-      w = 8.5;
-      a = 410;
-    } else if (meal === "lunch") {
-      w = 12.0;
-      a = 350;
-    } else if (meal === "dinner") {
-      w = 16.5;
-      a = 390;
+    if (hostel !== "all") {
+      studentQuery += ` AND s.hostel_id = ?`;
+      studentParams.push(hostel);
     }
 
+    const [studentCountResult] = await db.query(studentQuery, studentParams);
+
+    let attendanceQuery = `
+      SELECT COUNT(*) AS present
+      FROM Attendance a
+      JOIN Student s ON a.student_id = s.student_id
+      WHERE a.status = 'Present'
+      AND ${getDateCondition(time, "a.date")}
+    `;
+
+    let attendanceParams = [];
+
+    if (hostel !== "all") {
+      attendanceQuery += ` AND s.hostel_id = ?`;
+      attendanceParams.push(hostel);
+    }
+
+    const [attendanceResult] = await db.query(
+      attendanceQuery,
+      attendanceParams,
+    );
+
+    let wastageQuery = `
+      SELECT COALESCE(SUM(w.waste_kg), 0) AS total_waste
+      FROM Wastage w
+      JOIN Meal m ON w.meal_id = m.meal_id
+      JOIN Mess me ON m.mess_id = me.mess_id
+      WHERE ${getDateCondition(time, "w.date")}
+    `;
+
+    let wastageParams = [];
+
+    if (meal) {
+      wastageQuery += ` AND m.meal_type = ?`;
+      wastageParams.push(meal);
+    }
+
+    if (hostel !== "all") {
+      wastageQuery += ` AND me.hostel_id = ?`;
+      wastageParams.push(hostel);
+    }
+
+    const [wastageResult] = await db.query(wastageQuery, wastageParams);
+
+    let hostelQuery = `
+      SELECT COUNT(*) AS count
+      FROM Hostel
+    `;
+
+    const [hostelResult] = await db.query(hostelQuery);
+
     res.json({
-      studentCount: 450,
-      todayWastage: w,
-      todayAttendance: a,
-      activeHostels: 4,
+      studentCount: studentCountResult[0]?.count || 0,
+      todayAttendance: attendanceResult[0]?.present || 0,
+      todayWastage: wastageResult[0]?.total_waste || 0,
+      activeHostels: hostelResult[0]?.count || 0,
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard stats",
+      error: error.message,
     });
   }
 };
 
 exports.getWastageTrends = async (req, res) => {
-  const meal = req.query.meal || "all";
+  const meal = normalizeMeal(req.query.meal);
+  const hostel = req.query.hostel || "all";
+
   try {
-    const [rows] = await db.query(`
-            SELECT date, SUM(waste_kg) as total_waste 
-            FROM Wastage 
-            GROUP BY date 
-            ORDER BY date DESC LIMIT 7
-        `);
+    let query = `
+      SELECT w.date, COALESCE(SUM(w.waste_kg), 0) AS total_waste
+      FROM Wastage w
+      JOIN Meal m ON w.meal_id = m.meal_id
+      JOIN Mess me ON m.mess_id = me.mess_id
+      WHERE w.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    `;
 
-    if (rows.length > 0) {
-      res.json(rows.reverse());
-    } else {
-      throw new Error("No data found");
+    let params = [];
+
+    if (meal) {
+      query += ` AND m.meal_type = ?`;
+      params.push(meal);
     }
-  } catch (error) {
-    let mult = 1.0;
-    if (meal === "breakfast") mult = 0.3;
-    else if (meal === "lunch") mult = 0.5;
-    else if (meal === "dinner") mult = 0.6;
 
-    const mockData = [
-      { date: "2026-04-17", total_waste: (30 * mult).toFixed(1) },
-      { date: "2026-04-18", total_waste: (28 * mult).toFixed(1) },
-      { date: "2026-04-19", total_waste: (25 * mult).toFixed(1) },
-      { date: "2026-04-20", total_waste: (40 * mult).toFixed(1) },
-      { date: "2026-04-21", total_waste: (22 * mult).toFixed(1) },
-      { date: "2026-04-22", total_waste: (18 * mult).toFixed(1) },
-      { date: "2026-04-23", total_waste: (24.5 * mult).toFixed(1) },
-    ];
-    res.json(mockData);
+    if (hostel !== "all") {
+      query += ` AND me.hostel_id = ?`;
+      params.push(hostel);
+    }
+
+    query += `
+      GROUP BY w.date
+      ORDER BY w.date ASC
+    `;
+
+    const [rows] = await db.query(query, params);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Wastage trends error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch wastage trends",
+      error: error.message,
+    });
   }
 };
 
 exports.getCosts = async (req, res) => {
-  const meal = req.query.meal || "all";
+  const time = req.query.time || "today";
+
   try {
     const [rows] = await db.query(`
-            SELECT date, total_cost 
-            FROM Cost 
-            ORDER BY date DESC LIMIT 7
-        `);
+      SELECT date, total_cost
+      FROM Cost
+      WHERE ${getDateCondition(time, "date")}
+      ORDER BY date ASC
+    `);
 
-    if (rows.length > 0) {
-      res.json(rows.reverse());
-    } else {
-      throw new Error("No data found");
-    }
+    res.json(rows);
   } catch (error) {
-    let mult = 1.0;
-    if (meal === "breakfast") mult = 0.25;
-    else if (meal === "lunch") mult = 0.4;
-    else if (meal === "dinner") mult = 0.5;
+    console.error("Cost analysis error:", error);
 
-    const mockData = [
-      { date: "2026-04-17", total_cost: (15000 * mult).toFixed(0) },
-      { date: "2026-04-18", total_cost: (14500 * mult).toFixed(0) },
-      { date: "2026-04-19", total_cost: (14800 * mult).toFixed(0) },
-      { date: "2026-04-20", total_cost: (18000 * mult).toFixed(0) },
-      { date: "2026-04-21", total_cost: (13000 * mult).toFixed(0) },
-      { date: "2026-04-22", total_cost: (12500 * mult).toFixed(0) },
-      { date: "2026-04-23", total_cost: (13800 * mult).toFixed(0) },
-    ];
-    res.json(mockData);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch cost analysis",
+      error: error.message,
+    });
   }
 };
 
 exports.getRecentAlerts = async (req, res) => {
-  // This is purely a mock service for the smart alerts feature
-  res.json([
-    {
-      id: 1,
-      type: "warning",
-      message: "⚠️ High wastage detected during yesterday's dinner.",
-      time: "10 mins ago",
-    },
-    {
-      id: 2,
-      type: "info",
-      message: "📉 Low attendance expected for tomorrow's breakfast.",
-      time: "1 hr ago",
-    },
-    {
-      id: 3,
-      type: "success",
-      message: "✅ Grocery costs within budget for this week.",
-      time: "3 hrs ago",
-    },
-  ]);
+  try {
+    const [wastageRows] = await db.query(`
+      SELECT COALESCE(SUM(waste_kg), 0) AS total
+      FROM Wastage
+      WHERE date = CURDATE()
+    `);
+
+    const [attendanceRows] = await db.query(`
+      SELECT COUNT(*) AS present
+      FROM Attendance
+      WHERE date = CURDATE()
+      AND status = 'Present'
+    `);
+
+    const alerts = [];
+
+    const todayWastage = Number(wastageRows[0]?.total || 0);
+    const todayAttendance = Number(attendanceRows[0]?.present || 0);
+
+    if (todayWastage > 10) {
+      alerts.push({
+        id: 1,
+        type: "warning",
+        message: "⚠️ High food wastage detected today.",
+        time: "Just now",
+      });
+    }
+
+    if (todayAttendance < 5) {
+      alerts.push({
+        id: 2,
+        type: "info",
+        message: "📉 Low attendance recorded today.",
+        time: "Just now",
+      });
+    }
+
+    if (alerts.length === 0) {
+      alerts.push({
+        id: 3,
+        type: "success",
+        message: "✅ Mess operations look normal today.",
+        time: "Just now",
+      });
+    }
+
+    res.json(alerts);
+  } catch (error) {
+    console.error("Alerts error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch alerts",
+      error: error.message,
+    });
+  }
 };

@@ -1,0 +1,33 @@
+body {
+  background: #0f172a;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+#loader {
+  display: none;
+}
+
+.main-content {
+  padding: 30px;
+  margin-left: 250px;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 220px;
+  height: 100vh;
+  background: #111827;
+  padding: 20px;
+}
+
+.stat-card,
+.chart-container,
+.glass {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 15px;
+}
