@@ -1,5 +1,4 @@
 DELIMITER $$
-
 CREATE PROCEDURE add_student(
 IN p_first_name VARCHAR(30),
 IN p_middle_name VARCHAR(30),
