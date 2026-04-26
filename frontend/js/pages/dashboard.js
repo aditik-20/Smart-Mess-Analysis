@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const loadDashboard = async () => {
+    showLoader();
     try {
       const meal = document.getElementById("mealFilter").value;
       const time = document.getElementById("timeFilter").value;
@@ -44,13 +45,124 @@ document.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("statHostels").textContent =
         stats.activeHostels ?? 0;
+      try {
+        await loadWastageChart();
+      } catch (e) {
+        console.error("Wastage chart failed", e);
+      }
+
+      try {
+        await loadCostChart();
+      } catch (e) {
+        console.error("Cost chart failed", e);
+      }
+
       hideLoader();
     } catch (err) {
       console.error("Dashboard loading error:", err);
       hideLoader();
     }
+    await loadAIInsights();
   };
   loadDashboard();
+
+  async function loadWastageChart() {
+    console.log("chart running");
+    const meal = document.getElementById("mealFilter").value;
+    const hostel = document.getElementById("hostelFilter").value;
+
+    const res = await fetch(
+      `${API_BASE}/api/dashboard/wastage-trends?meal=${meal}&hostel=${hostel}`,
+    );
+
+    const data = await res.json();
+    console.log("chart data:", data);
+    if (!data || data.length === 0) {
+      console.warn("No data for chart");
+
+      const ctx = document.getElementById("wastageChart").getContext("2d");
+
+      if (window.wastageChartInstance) {
+        window.wastageChartInstance.destroy();
+      }
+
+      window.wastageChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["No Data"],
+          datasets: [
+            {
+              label: "Wastage (kg)",
+              data: [0],
+            },
+          ],
+        },
+      });
+
+      return; // 👈 STOP HERE
+    }
+    const labels = data.map((item) => new Date(item.date).toLocaleDateString());
+    const values = data.map((item) => Number(item.total_waste));
+
+    // 🔥 CALL YOUR CONFIG FUNCTION
+    if (window.chartsConfig) {
+      window.chartsConfig.initWastageChart(labels, values);
+    }
+  }
+
+  async function loadCostChart() {
+    const time = document.getElementById("timeFilter").value;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard/costs?time=${time}`);
+
+      if (!res.ok) {
+        console.error("Cost API failed");
+        return;
+      }
+
+      const data = await res.json();
+      if (!data || data.length === 0) return;
+
+      const labels = data.map((item) =>
+        new Date(item.date).toLocaleDateString(),
+      );
+
+      const values = data.map((item) => Number(item.total_cost));
+
+      if (window.chartsConfig) {
+        window.chartsConfig.initCostChart(labels, values);
+      }
+    } catch (err) {
+      console.error("Cost chart error:", err);
+    }
+  }
+  async function loadAIInsights() {
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard/insights`);
+
+      if (!res.ok) {
+        throw new Error("Insights API failed");
+      }
+
+      const data = await res.json();
+
+      console.log("AI insights:", data);
+
+      const el = document.getElementById("aiPrediction");
+
+      if (!data || !data.message) {
+        el.textContent = "No insights available.";
+        return;
+      }
+
+      el.textContent = data.message;
+    } catch (err) {
+      console.error("AI Insights error:", err);
+      document.getElementById("aiPrediction").textContent =
+        "Failed to load insights.";
+    }
+  }
 
   setInterval(loadDashboard, 30000);
 

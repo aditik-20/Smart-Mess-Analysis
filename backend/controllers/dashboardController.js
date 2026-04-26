@@ -39,14 +39,19 @@ exports.getStats = async (req, res) => {
     const [studentCountResult] = await db.query(studentQuery, studentParams);
 
     let attendanceQuery = `
-      SELECT COUNT(*) AS present
-      FROM Attendance a
-      JOIN Student s ON a.student_id = s.student_id
-      WHERE a.status = 'Present'
-      AND ${getDateCondition(time, "a.date")}
-    `;
+  SELECT COUNT(*) AS present
+  FROM Attendance a
+  JOIN Student s ON a.student_id = s.student_id
+  WHERE a.status = 'Present'
+  AND ${getDateCondition(time, "a.date")}
+`;
 
     let attendanceParams = [];
+
+    if (hostel !== "all") {
+      attendanceQuery += ` AND s.hostel_id = ?`;
+      attendanceParams.push(hostel);
+    }
 
     if (hostel !== "all") {
       attendanceQuery += ` AND s.hostel_id = ?`;
